@@ -1,2 +1,11 @@
-.terraform*
-terraform*
+# Terraform working directory
+.terraform/
+.terraform.lock.hcl
+
+# Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Zip artifacts
+*.zip
+
