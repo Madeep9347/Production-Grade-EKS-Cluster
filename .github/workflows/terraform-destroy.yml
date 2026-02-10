@@ -17,9 +17,9 @@ env:
   TF_VERSION: 1.14.4
 
 jobs:
-  destroy:
+  plan-destroy:
+    name: Terraform Destroy Plan
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
 
     defaults:
       run:
@@ -41,4 +41,30 @@ jobs:
 
       - run: terraform init -input=false
       - run: terraform plan -destroy
+
+  destroy:
+    name: Terraform Destroy Apply
+    needs: plan-destroy
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}  # 👈 approval happens HERE
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: envs/${{ github.event.inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - run: terraform init -input=false
       - run: terraform destroy -auto-approve
