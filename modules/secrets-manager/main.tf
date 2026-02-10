@@ -11,7 +11,7 @@ resource "aws_secretsmanager_secret" "mysql" {
 }
 
 resource "aws_secretsmanager_secret_version" "mysql" {
-  secret_id = aws_secretsmanagerutsmanager_secret.mysql.id
+  secret_id = aws_secretsmanager_secret.mysql.id
 
   secret_string = jsonencode({
     username = var.mysql_username
