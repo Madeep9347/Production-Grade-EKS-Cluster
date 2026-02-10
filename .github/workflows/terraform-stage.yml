@@ -8,9 +8,9 @@ env:
   TF_VERSION: 1.14.4
 
 jobs:
-  terraform:
+  plan:
+    name: Terraform Plan (stage)
     runs-on: ubuntu-latest
-    environment: stage
 
     defaults:
       run:
@@ -33,4 +33,30 @@ jobs:
       - run: terraform init -input=false
       - run: terraform validate
       - run: terraform plan
+
+  apply:
+    name: Terraform Apply (stage)
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: stage   # 👈 approval happens HERE
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: envs/stage
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - run: terraform init -input=false
       - run: terraform apply -auto-approve

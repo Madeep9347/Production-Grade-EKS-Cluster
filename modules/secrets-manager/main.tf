@@ -1,6 +1,8 @@
-##MYSQL
+## MYSQL
 resource "aws_secretsmanager_secret" "mysql" {
   name = "${var.env}/mysql"
+
+  recovery_window_in_days = 0
 
   tags = {
     Environment = var.env
@@ -9,7 +11,7 @@ resource "aws_secretsmanager_secret" "mysql" {
 }
 
 resource "aws_secretsmanager_secret_version" "mysql" {
-  secret_id = aws_secretsmanager_secret.mysql.id
+  secret_id = aws_secretsmanagerutsmanager_secret.mysql.id
 
   secret_string = jsonencode({
     username = var.mysql_username
@@ -17,9 +19,11 @@ resource "aws_secretsmanager_secret_version" "mysql" {
   })
 }
 
-#DocumentDB
+## DOCUMENTDB
 resource "aws_secretsmanager_secret" "documentdb" {
   name = "${var.env}/documentdb"
+
+  recovery_window_in_days = 0
 
   tags = {
     Environment = var.env
