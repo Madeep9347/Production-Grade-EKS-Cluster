@@ -1,7 +1,7 @@
 # Security Group for Bastion Host
 resource "aws_security_group" "bastion_sg" {
-  name        = "bastion-sg"
-  description = "Security group for bastion host"
+  name        = "bastion-sg-${var.eks_cluster_name}"
+  description = "Security group for bastion host (${var.eks_cluster_name})"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -19,8 +19,10 @@ resource "aws_security_group" "bastion_sg" {
   }
 
   tags = {
-    Name        = "bastion-sg"
-    Environment = var.env
+    Name            = "bastion-sg-${var.eks_cluster_name}"
+    Environment     = var.env
+    EKSClusterName  = var.eks_cluster_name
+    Project         = "eks-platform"
   }
 }
 
@@ -31,14 +33,16 @@ resource "aws_instance" "bastion_host" {
   key_name                    = var.key_pair
   subnet_id                   = var.public_subnet_ids[0]
   associate_public_ip_address = true
-   user_data = file("${path.module}/user_data.sh")
+  user_data                   = file("${path.module}/user_data.sh")
 
   vpc_security_group_ids = [
     aws_security_group.bastion_sg.id
   ]
 
   tags = {
-    Name        = "bastion-ec2"
-    Environment = var.env
+    Name            = "bastion-${var.eks_cluster_name}"
+    Environment     = var.env
+    EKSClusterName  = var.eks_cluster_name
+    Project         = "eks-platform"
   }
 }

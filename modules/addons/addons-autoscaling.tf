@@ -28,14 +28,14 @@ data "aws_iam_policy_document" "cluster_autoscaler_assume" {
 
     principals {
       type        = "Federated"
-      identifiers = [module.eks.oidc_provider_arn]
+      identifiers = [var.oidc_provider_arn]
     }
 
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(module.eks.oidc_provider_url, "https://", "")}:sub"
+      variable = "${replace(var.oidc_provider_url, "https://", "")}:sub"
       values   = ["system:serviceaccount:kube-system:cluster-autoscaler"]
     }
   }
@@ -82,7 +82,6 @@ resource "helm_release" "cluster_autoscaler" {
     value = aws_iam_role.cluster_autoscaler.arn
   }
 
-  # REQUIRED production args
   set {
     name  = "extraArgs.balance-similar-node-groups"
     value = "true"

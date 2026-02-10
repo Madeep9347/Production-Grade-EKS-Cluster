@@ -44,7 +44,7 @@ resource "aws_eks_cluster" "this" {
   }
 }
 
-#Managed Node Group
+# Managed Node Group
 resource "aws_eks_node_group" "default" {
   cluster_name    = aws_eks_cluster.this.name
   node_group_name = "${var.cluster_name}-al2023-ng"
@@ -52,13 +52,13 @@ resource "aws_eks_node_group" "default" {
   subnet_ids      = var.private_subnet_ids
 
   ami_type       = "AL2023_x86_64_STANDARD"
-  instance_types = ["t3a.medium"]
+  instance_types = var.instance_types
   capacity_type  = "ON_DEMAND"
 
   scaling_config {
-    desired_size = 1
-    min_size     = 1
-    max_size     = 4
+    desired_size = var.desired_size
+    min_size     = var.min_size
+    max_size     = var.max_size
   }
 
   disk_size = 20
@@ -69,22 +69,28 @@ resource "aws_eks_node_group" "default" {
   }
 
   tags = {
-    Name                                  = "${var.cluster_name}-worker"
-    Environment                           = var.env
-    Project                               = "eks-platform"
+    # EC2 / ASG identification
+    Name        = "${var.cluster_name}-worker"
+    Environment = var.env
+    Project     = "eks-platform"
 
-    # Kubernetes cluster ownership (VERY IMPORTANT)
+    # REQUIRED for Kubernetes ownership
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
 
-    # Optional but useful
-    "eks:nodegroup-name"                  = "${var.cluster_name}-al2023-ng"
-    "eks:cluster-name"                    = var.cluster_name
+    # REQUIRED for Cluster Autoscaler
+    "k8s.io/cluster-autoscaler/enabled"          = "true"
+    "k8s.io/cluster-autoscaler/${var.cluster_name}" = "owned"
+
+    # Useful metadata
+    "eks:nodegroup-name" = "${var.cluster_name}-al2023-ng"
+    "eks:cluster-name"   = var.cluster_name
   }
 
   depends_on = [
     aws_eks_cluster.this
   ]
 }
+
 
 
 

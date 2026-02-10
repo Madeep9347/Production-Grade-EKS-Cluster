@@ -36,7 +36,7 @@ resource "aws_subnet" "public_subnets" {
 
 
   tags = {
-    Name = "public_subnet_${count.index+1}"
+    Name = "public_subnet_${var.eks_cluster_name}_${count.index+1}"
     "kubernetes.io/role/elb" = "1"
     "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
   }
@@ -50,7 +50,7 @@ resource "aws_subnet" "private_subnets" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name = "private_subnets_${count.index+1}"
+    Name = "private_subnets_${var.eks_cluster_name}_${count.index+1}"
     "kubernetes.io/role/internal-elb" = "1"
     "kubernetes.io/cluster/${var.eks_cluster_name}"="shared"
   }
@@ -129,6 +129,16 @@ resource "aws_flow_log" "example" {
 resource "aws_cloudwatch_log_group" "example" {
   name              = "/aws/vpc/flow-logs/${var.eks_cluster_name}"
   retention_in_days = 7
+
+  lifecycle {
+    #prevent_destroy = true
+    ignore_changes  = [name]
+  }
+
+  tags = {
+    Environment = var.env
+    Project     = "eks-platform"
+  }
 }
 
 

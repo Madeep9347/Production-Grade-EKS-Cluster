@@ -13,14 +13,14 @@ data "aws_iam_policy_document" "alb_assume_role" {
 
     principals {
       type        = "Federated"
-      identifiers = [module.eks.oidc_provider_arn]
+      identifiers = [var.oidc_provider_arn]
     }
 
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(module.eks.oidc_provider_url, "https://", "")}:sub"
+      variable = "${replace(var.oidc_provider_url, "https://", "")}:sub"
       values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
     }
   }
@@ -55,10 +55,9 @@ resource "helm_release" "alb_controller" {
     value = "ap-south-1"
   }
 
-  # THIS IS THE KEY FIX
   set {
     name  = "vpcId"
-    value = module.vpc.vpc_id
+    value = var.vpc_id
   }
 
   set {
